@@ -3,6 +3,8 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import statsmodels.api as sm
+from statsmodels.tsa.stattools import coint 
 # rolling z score of the spread
 
 def compute_zscore(spread: pd.Series, window: int = 30) -> pd.Series:
@@ -50,3 +52,18 @@ def sharpe_ratio(daily_pnl: pd.Series, periods_per_year: int = 252) -> float:
     mean_daily_return = daily_pnl.mean()
     std_daily_return = daily_pnl.std()
     return (mean_daily_return / std_daily_return) * np.sqrt(periods_per_year)
+
+
+# coint test
+def cointegration_test(series_a: pd.Series, series_b: pd.Series) -> tuple:
+    test_statistic, p_value, crit_values = coint(series_a, series_b)
+    return test_statistic, p_value
+
+
+# hedge ratio
+def estimate_hedge_ratio(SERIES_A: pd.Series, SERIES_B: pd.Series) -> tuple:
+    model = sm.OLS(SERIES_A, sm.add_constant(SERIES_B)).fit()
+    alpha = model.params.iloc[0]
+    beta = model.params.iloc[1]
+    spread = model.resid
+    return alpha, beta, spread

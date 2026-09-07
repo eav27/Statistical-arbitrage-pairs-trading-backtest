@@ -7,12 +7,13 @@ Progression across the notebooks:
 run a cointegration test on them to see whether they are cointegrated, then run OLS regression in order to get 
 parameters like hedge ratio and spread, then same as notebook 1.
 
-3. dynamic hedge ratio - 
+3. dynamic hedge ratio - beta changing constantly throughout time frame models true market movement better as
+in reality it would not stay constant.
 
-4. portfolio risk controls - 
-
-
-
+4. portfolio + risk controls - increasing portfolio allows for a test on whether the strategy was just a one off
+for one sole pair, or works over generalised stock pairs that follow similar trends. risk controls also allow 
+for better management as we can introduce limits to which money loss can be prevented, and to only trade whithin
+bounds deemed safe.
 
 NOTES:
 
@@ -57,3 +58,54 @@ Total P&L (spread units): 2.51
 Number of trades: 33
 
 this improved the sharpe and p&l, whilst keeping the number of trades similar, showcasing the benefits of the pair selection.
+
+
+3. using the kalman filter allowed a dynamic hedge ratio instead of static one. this follows true market trends more closely
+as the hedge ratio between the two wouldnt stay the same due to a variety of reasons. on the kalman filter model, beta swung 
+quite a lot in the early months of the time frame, so in order to have a fair comparison of when it was settling down around
+an average i removed / only looked from when it was stable. i then re-ran the previous model, with the static hedge ratio
+over the same time frame, and compared the results of each, which are:
+
+Cointegration-based Sharpe (SAM/BF-B): 1.23
+Total P&L (spread units): 160.14
+Number of trades: 21
+
+Kalman-based Sharpe (SAM/BF-B): 1.77
+Total P&L (spread units): 164.63
+Number of trades: 21
+
+here we can see that introducing the kalman filter increased the sharpe ratio by a good amount, however must take note of the 
+fact there were only 21 trades so not a very big sample size to draw this conclusion on. the p&l being very similar though 
+does tell us that the use of this dynamic beta allowed for a return of similar money, but with less volatility. the same 
+trades also demonstrate that improvement isnt coming from trading more or less, just from the increase in quality of the spread
+
+4. in introducing a portfolio of the top 4 stock pairs, which were determined from notebook 2s screening of best statistics / 
+lowest p values, there were a few interesting results. first of all, SAM BF-B was checked with the new windows and walk-forward
+model, before introducing more pairs to it, which gave us the following:
+
+0  2022-01-01 2023-01-01 2023-01-01 2023-04-01  0.020945    True
+1  2022-04-01 2023-04-01 2023-04-01 2023-07-01  0.052710   False
+2  2022-07-01 2023-07-01 2023-07-01 2023-10-01  0.082072   False
+3  2022-10-01 2023-10-01 2023-10-01 2024-01-01  0.323046   False
+Windows traded: 1 / 4
+Walk-forward out-of-sample Sharpe (SAM/BF-B): 3.69   
+
+here we can see that by testing for cointegration across each window, instead of just leaving it as one test, the last 3 windows
+didnt pass the test, so were skipped of any trades. this explicitly shows the two stocks drifted apart and were not following 
+similar trends. for the one traded period the sharpe was quite high at 3.69, however for such a small period this needs to be 
+interpreted carefully, as it could have just been a lucky time. 
+
+when introducing the other pairs we get the following full portfolio statistics:
+
+Portfolio walk-forward Sharpe: 1.98
+Portfolio max drawdown: -8.02
+COP/EOG: walk-forward Sharpe = 0.48
+BAC/PNC: never traded (failed cointegration in every walk-forward window)
+SAM/BF-B: walk-forward Sharpe = 3.69
+INTC/MU: walk-forward Sharpe = -1.17
+
+
+the overall portfolio sharpe ratio is quite good at 1.98, however again not over a massive period of time and the SAM/BF-B does 
+help it a lot. 0.48 for COP/EOG is a moderate one, showing good returns, and the INTC/MU  = -1.17 is showing that even though 
+two of the stocks may be correlated, this particular trading strategy isnt perfect. the risk controls also are shown to work 
+as required with BAC/PNC, as in all 4 windows it never passed the cointegration test, therefore never was allowed to trade.
